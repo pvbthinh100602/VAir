@@ -1,0 +1,118 @@
+# Secrets - NEVER commit these files
+secrets.yaml
+**/secrets.yaml
+*.secret
+
+# ESPHome
+.esphome/
+**/.esphome/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.venv
+venv/
+ENV/
+env/
+.venv/
+
+# ESP-IDF build outputs
+build/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+
+# Firmware build outputs
+*.bin
+*.elf
+*.map
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# AI Models (Phase 3)
+server/models/
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+# Documentation build
+_build/
+.doctrees/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Hardware design files (work-in-progress)
+*.kicad_prl
+*.kicad_pcb-bak
+*-backups/
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Environment variables
+.env
+.env.local
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*

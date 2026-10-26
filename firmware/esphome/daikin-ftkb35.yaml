@@ -1,0 +1,70 @@
+# ESPHome Configuration for Daikin FTKB35 (remote ARC486A56) - ESP32 DevKit + IR LED
+#
+# IMPORTANT NOTES (not yet confirmed directly):
+#  - No sources found documenting which protocol the ARC486A56 remote uses.
+#  - ESPHome's native `daikin` platform sends 3 frames (8+8+19 bytes = 35 bytes, like ARC433/ARC470).
+#  - If your remote is actually DAIKIN216 (2 frames, 8+19 bytes = 27 bytes, like ARC484A4),
+#    then the `platform: daikin` below will NOT control the AC → use remote_receiver (below)
+#    to capture the signal and verify first (see guide in documentation).
+#  - You can try `daikin_arc` (Japanese ARC43xxx) or `heatpumpir` (daikin / daikin_arc417 / daikin_arc480)
+#    by changing the platform in the climate section.
+
+esphome:
+  name: daikin-ftkb35
+  friendly_name: Daikin FTKB35
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Daikin-FTKB35 Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+# --- IR Transmitter: 940nm LED via transistor, signal pin GPIO4 ---
+remote_transmitter:
+  pin: GPIO4
+  carrier_duty_percent: 50%
+
+# --- IR Receiver (OPTIONAL, for capturing real remote signals) ---
+# Requires 38kHz receiver module (VS1838B / TSOP / HS0038B), OUT pin connected to GPIO15, VCC to 3.3V, GND to GND.
+# Uncomment to use, reflash, point the remote at the module, and view logs (esphome logs daikin-ftkb35.yaml).
+# remote_receiver:
+#   id: rcvr
+#   pin:
+#     number: GPIO15
+#     inverted: true
+#     mode:
+#       input: true
+#       pullup: true
+#   dump:
+#     - raw
+#     - aeha
+#   tolerance: 55%
+#   # Daikin sends over 300 pulses per frame; if logs are truncated, uncomment the next 2 lines:
+#   # receive_symbols: 384
+#   # rmt_symbols: 512
+#   # GPIO15 is a strapping pin (ESPHome will warn, but it works); can use GPIO16/GPIO18 instead.
+
+# --- Climate: CANDIDATE protocol (not yet confirmed with ARC486A56) ---
+climate:
+  - platform: daikin
+    name: "Daikin FTKB35 Air Conditioner"
+    # receiver_id: rcvr          # uncomment if enabling remote_receiver above to sync state
+    # supports_heat: false       # Vietnamese FTKB35 remote only has COOL/DRY/FAN (no HEAT); uncomment to hide heating mode
