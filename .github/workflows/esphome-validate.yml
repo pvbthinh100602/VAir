@@ -1,60 +1,43 @@
-name: ESPHome YAML Validation
+name: VAir Validation
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
     paths:
       - 'firmware/esphome/**'
+      - 'scripts/**'
+      - 'requirements-dev.txt'
       - '.github/workflows/esphome-validate.yml'
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
     paths:
       - 'firmware/esphome/**'
+      - 'scripts/**'
+      - 'requirements-dev.txt'
       - '.github/workflows/esphome-validate.yml'
 
 jobs:
   validate:
-    name: Validate ESPHome Configuration
+    name: Validate Configuration and Code Quality
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-    
-    - name: Install ESPHome
-      run: |
-        pip install --upgrade pip
-        pip install esphome
-    
-    - name: Create temporary secrets file for CI
-      working-directory: firmware/esphome
-      run: |
-        cat > secrets.yaml <<EOF
-        # CI-generated secrets file (not real credentials)
-        wifi_ssid: "CI_TEST_SSID"
-        wifi_password: "ci_test_password_12345"
-        ap_password: "ci_fallback_password"
-        api_encryption_key: "AbCdEf1234567890AbCdEf1234567890AbCdEf1234567890AbCdEf12345="
-        EOF
-    
-    - name: Validate daikin-ftkb35.yaml
-      working-directory: firmware/esphome
-      run: |
-        esphome config daikin-ftkb35.yaml
-    
-    - name: Print ESPHome version
-      if: always()
-      run: |
-        esphome version
-    
-    - name: Cleanup secrets file
-      if: always()
-      working-directory: firmware/esphome
-      run: |
-        rm -f secrets.yaml
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run validation checks
+        env:
+          CI: true
+        run: |
+          bash scripts/check.sh

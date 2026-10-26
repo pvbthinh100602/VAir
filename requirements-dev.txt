@@ -1,0 +1,14 @@
+# VAir Development Dependencies
+# Pinned versions for reproducible builds
+
+# ESPHome - ESP32 firmware framework
+# Version 2026.10.0 validated with daikin-ftkb35.yaml configuration
+# Requires Python 3.12-3.14
+esphome==2026.10.0
+
+# YAML linting
+yamllint==1.35.1
+
+# Note: For Python <3.12, use ESPHome 2025.7.5 instead:
+# esphome==2025.7.5
+# (Uncomment above and comment out 2026.10.0 if using older Python)

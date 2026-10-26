@@ -22,47 +22,54 @@ See [docs/roadmap.md](docs/roadmap.md) for the complete development plan.
 
 ## Quick Start (Phase 1)
 
-### Prerequisites
+### For Users (Hardware Testing)
 
+**Prerequisites:**
 - ESP32 development board (ESP32-WROOM-32 recommended)
 - IR LED (940nm), NPN transistor (2N2222 or S8050), resistors (100Ω, 1kΩ)
 - Optional: VS1838B IR receiver module for signal capture
 - Python 3.12-3.14 (for ESPHome 2026.x) or Python <3.12 (for ESPHome 2025.7.x)
 
-### Hardware Setup
-
+**Hardware Setup:**
 See [docs/wiring.md](docs/wiring.md) for complete wiring instructions and [docs/hardware.md](docs/hardware.md) for the bill of materials.
 
-### Firmware Installation
+**Firmware Installation:**
+See [docs/dev-setup.md](docs/dev-setup.md) for the complete installation and flashing guide.
 
-1. **Clone this repository**:
-   ```bash
-   git clone https://github.com/pvbthinh100602/VAir.git
-   cd VAir/firmware/esphome
-   ```
+**Quick commands:**
+```bash
+# 1. Clone and setup development environment
+git clone https://github.com/pvbthinh100602/VAir.git
+cd VAir
+bash scripts/setup-dev.sh
+source .venv/bin/activate
 
-2. **Create secrets file**:
-   ```bash
-   cp secrets.example.yaml secrets.yaml
-   # Edit secrets.yaml with your WiFi credentials and API key
-   ```
+# 2. Edit WiFi credentials
+nano firmware/esphome/secrets.yaml
 
-3. **Install ESPHome** (choose based on Python version):
-   ```bash
-   # For Python 3.12-3.14 (ESPHome 2026.x)
-   pip install esphome
+# 3. Flash to ESP32
+esphome run firmware/esphome/daikin-ftkb35.yaml
+```
 
-   # For Python <3.12 (ESPHome 2025.7.x)
-   pip install "esphome==2025.7.5"
-   ```
+**Important first step:** Before attempting to control your AC, capture the actual IR signals from your remote to verify the protocol. See [docs/ir-capture.md](docs/ir-capture.md) for detailed instructions.
 
-4. **Compile and flash**:
-   ```bash
-   esphome run daikin-ftkb35.yaml
-   ```
+### For Developers (Contributing)
 
-5. **Capture IR signals** (important first step):
-   Before attempting to control your AC, you should capture the actual IR signals from your remote to verify the protocol. See [docs/ir-capture.md](docs/ir-capture.md) for detailed instructions.
+**One-command setup:**
+```bash
+git clone https://github.com/pvbthinh100602/VAir.git
+cd VAir
+bash scripts/setup-dev.sh
+```
+
+See [docs/dev-setup.md](docs/dev-setup.md) for the complete development guide, including:
+- Python version requirements and compatibility
+- ESPHome compilation and flashing workflows
+- IR signal capture and analysis
+- Running validation checks
+- Known gotchas and workarounds
+
+**For AI coding agents:** See [AGENTS.md](AGENTS.md) for automated setup and contribution guidelines.
 
 ## Project Phases
 
@@ -79,10 +86,15 @@ See [docs/roadmap.md](docs/roadmap.md) for detailed checklists and goals for eac
 
 ## Documentation
 
-- [Hardware Bill of Materials](docs/hardware.md) - Components and shopping list
+### Hardware
+- [Hardware Bill of Materials](docs/hardware.md) - Components and shopping list with HCMC prices
 - [Wiring Guide](docs/wiring.md) - Circuit diagrams and connections
 - [IR Signal Capture](docs/ir-capture.md) - How to capture and verify remote signals
+
+### Development
+- [Development Setup Guide](docs/dev-setup.md) - Complete environment setup and workflows
 - [Project Roadmap](docs/roadmap.md) - Development phases and progress
+- [AI Agent Instructions](AGENTS.md) - Guidelines for AI coding assistants
 
 ## License
 

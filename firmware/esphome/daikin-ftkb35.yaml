@@ -66,5 +66,5 @@ remote_transmitter:
 climate:
   - platform: daikin
     name: "Daikin FTKB35 Air Conditioner"
-    # receiver_id: rcvr          # uncomment if enabling remote_receiver above to sync state
-    # supports_heat: false       # Vietnamese FTKB35 remote only has COOL/DRY/FAN (no HEAT); uncomment to hide heating mode
+    # receiver_id: rcvr  # uncomment if enabling remote_receiver above
+    # supports_heat: false  # Vietnamese FTKB35 only has COOL/DRY/FAN

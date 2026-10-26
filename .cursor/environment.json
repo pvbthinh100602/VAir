@@ -1,0 +1,4 @@
+{
+  "install": "bash scripts/setup-dev.sh",
+  "name": "VAir Development Environment"
+}
