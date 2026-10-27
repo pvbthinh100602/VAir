@@ -16,7 +16,7 @@ This document provides guidelines for AI coding agents (including Cursor Cloud A
 - ✅ Log messages and user-facing strings
 
 **Exceptions** (Vietnamese text allowed):
-- ❌ Shop names and addresses in `docs/hardware.md` (e.g., "Caka", "Lữ Gia", "Thủ Đức")
+- ❌ Shop names and addresses in `docs/hardware.md` (see that file for the real names)
 - ❌ Street addresses and location names in documentation
 
 **Why**: The project is built for Vietnamese home use with planned Vietnamese **voice control**, but all development content is in English to facilitate international collaboration.

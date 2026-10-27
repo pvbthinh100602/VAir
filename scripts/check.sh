@@ -120,6 +120,11 @@ ALLOWED_FILES=(
     "server/README.md"
 )
 
+# The detector itself contains the diacritic class, so it must not be scanned.
+SKIP_FILES=(
+    "scripts/check.sh"
+)
+
 # Build grep exclude arguments
 EXCLUDE_ARGS=""
 for file in "${ALLOWED_FILES[@]}"; do
@@ -138,9 +143,9 @@ while IFS= read -r file; do
     # Skip binary files
     if file "$file" 2>/dev/null | grep -q "text"; then
         if grep -P "$VIETNAMESE_PATTERN" "$file" > /dev/null 2>&1; then
-            # Check if this file is in the allowed list
+            # Check if this file is in the allowed list or is the detector itself
             IS_ALLOWED=false
-            for allowed in "${ALLOWED_FILES[@]}"; do
+            for allowed in "${ALLOWED_FILES[@]}" "${SKIP_FILES[@]}"; do
                 if [[ "$file" == "$allowed" ]]; then
                     IS_ALLOWED=true
                     break
