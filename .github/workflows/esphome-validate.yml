@@ -1,0 +1,43 @@
+name: VAir Validation
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'firmware/esphome/**'
+      - 'scripts/**'
+      - 'requirements-dev.txt'
+      - '.github/workflows/esphome-validate.yml'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'firmware/esphome/**'
+      - 'scripts/**'
+      - 'requirements-dev.txt'
+      - '.github/workflows/esphome-validate.yml'
+
+jobs:
+  validate:
+    name: Validate Configuration and Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run validation checks
+        env:
+          CI: true
+        run: |
+          bash scripts/check.sh
