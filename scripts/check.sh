@@ -59,18 +59,26 @@ else
     TEMP_SECRETS=false
 fi
 
-if esphome config firmware/esphome/daikin-ftkb35.yaml 2>&1 | tee /tmp/esphome-check.log; then
-    # Check for actual errors (not warnings) - look for "Failed config" or error messages
-    if grep -q "Failed config\|ERROR.*:" /tmp/esphome-check.log && ! grep -q "INFO Configuration is valid!" /tmp/esphome-check.log; then
-        echo -e "${RED}✗ ESPHome configuration has errors${NC}"
-        ALL_PASSED=false
+ESPHOME_CONFIGS=(
+    "firmware/esphome/daikin-ftkb35.yaml"
+    "firmware/esphome/blink.yaml"
+    "firmware/esphome/ir-capture.yaml"
+)
+
+for config in "${ESPHOME_CONFIGS[@]}"; do
+    if esphome config "$config" 2>&1 | tee /tmp/esphome-check.log; then
+        # Check for actual errors (not warnings) - look for "Failed config" or error messages
+        if grep -q "Failed config\|ERROR.*:" /tmp/esphome-check.log && ! grep -q "INFO Configuration is valid!" /tmp/esphome-check.log; then
+            echo -e "${RED}✗ ESPHome configuration has errors: $config${NC}"
+            ALL_PASSED=false
+        else
+            echo -e "${GREEN}✓ ESPHome configuration is valid: $config${NC}"
+        fi
     else
-        echo -e "${GREEN}✓ ESPHome configuration is valid${NC}"
+        echo -e "${RED}✗ ESPHome validation failed: $config${NC}"
+        ALL_PASSED=false
     fi
-else
-    echo -e "${RED}✗ ESPHome validation failed${NC}"
-    ALL_PASSED=false
-fi
+done
 
 # Cleanup temporary secrets
 if [[ "$TEMP_SECRETS" == "true" ]]; then
