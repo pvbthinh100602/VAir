@@ -1,0 +1,64 @@
+# Capture IR from the Daikin remote over USB serial.
+#
+# Receiver wiring (proposed, same as docs/wiring.md):
+#   VS1838B VCC -> 3.3V
+#   VS1838B GND -> GND
+#   VS1838B OUT -> GPIO35
+# GPIO35 is input-only and has no internal pull-up. The VS1838B drives OUT,
+# so no pull-up is configured.
+# No Wi-Fi and no secrets.yaml.
+
+esphome:
+  name: vair-ir-capture
+  friendly_name: VAir IR Capture
+  on_boot:
+    - priority: -100
+      then:
+        - logger.log:
+            level: INFO
+            format: "IR capture ready. Point the remote at the receiver and press one button."
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: INFO
+  baud_rate: 115200
+
+# Samples GPIO35 for 300ms each second. changes=0 while a button is held
+# means the receiver signal is not reaching this pin.
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          const int pin = 35;
+          int level = digitalRead(pin);
+          int changes = 0;
+          const uint32_t start = millis();
+          while (millis() - start < 300) {
+            const int now = digitalRead(pin);
+            if (now != level) {
+              changes++;
+              level = now;
+            }
+          }
+          ESP_LOGI("ir", "GPIO35 level=%d changes=%d", level, changes);
+
+# idle is longer than the ~29ms gap between Daikin frames so one button
+# press is one capture. receive_symbols covers a full Daikin message.
+remote_receiver:
+  id: ir_receiver
+  pin:
+    number: GPIO35
+    inverted: true
+    mode:
+      input: true
+  dump:
+    - raw
+    - aeha
+  tolerance: 55%
+  idle: 45ms
+  receive_symbols: 384
+  rmt_symbols: 512

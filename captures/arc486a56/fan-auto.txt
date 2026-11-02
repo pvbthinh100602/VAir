@@ -1,0 +1,21 @@
+Button: Fan
+Remote before press: power on, mode cool, fan level 5, 26.5 C, swing off
+Remote after press: fan auto. Temperature stayed 26.5 C.
+Captured: 2026-11-03 00:48:41 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: fan-auto.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 A0 00 00 06 60 00 00 C5 00 08 4B
+
+Frames 1 and 2 match fan level 5. Checksums match.
+
+Frame 3 differences from fan level 5, swing off:
+- Byte 8: 70 -> A0. The high nibble changed from 7 to A. The low nibble stayed 0 (swing off).
+  Fan code A is auto, the same code used by IRremoteESP8266 for Daikin fan auto.
+- Byte 6 stays 35, which is 26.5 C.
+- Byte 5 stays 31: power on, cool.
+- Byte 18: 1B -> 4B. Checksum only. It rose by 0x30, the same amount as byte 8.

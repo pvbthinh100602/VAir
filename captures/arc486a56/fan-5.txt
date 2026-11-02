@@ -1,0 +1,21 @@
+Button: Fan
+Remote before press: power on, mode cool, fan level 4, 26.5 C, swing off
+Remote after press: fan level 5. Temperature stayed 26.5 C.
+Captured: 2026-11-03 00:46:59 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: fan-5.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 70 00 00 06 60 00 00 C5 00 08 1B
+
+Frames 1 and 2 match swing-off. Checksums match.
+
+Frame 3 differences from fan level 4, swing off:
+- Byte 8: 60 -> 70. The high nibble changed from 6 to 7. The low nibble stayed 0 (swing off).
+  Fan code 7 is level 5, stored in that high nibble.
+- Byte 6 stays 35, which is 26.5 C.
+- Byte 5 stays 31: power on, cool.
+- Byte 18: 0B -> 1B. Checksum only. It rose by 0x10, the same amount as byte 8.

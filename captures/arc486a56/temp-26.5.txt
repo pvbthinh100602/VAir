@@ -1,0 +1,18 @@
+Button: Temperature up
+Remote before press: power on, mode cool, fan level 3, 26 C, swing on
+Remote after press: 26.5 C. Mode, fan, and swing were not reported as changed.
+Captured: 2026-11-03 00:17:19 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: temp-26.5.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 5F 00 00 06 60 00 00 C5 00 08 0A
+
+Frames 1 and 2 match power-on. Checksums match.
+
+Frame 3 differences from power-on (26 C):
+- Byte 6: 34 -> 35. Value divided by 2 is the Celsius setpoint: 52/2 = 26.0, 53/2 = 26.5.
+- Byte 18: 09 -> 0A. Checksum only. It rose by the same 1 as byte 6.

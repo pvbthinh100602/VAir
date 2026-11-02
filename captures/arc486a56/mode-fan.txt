@@ -1,0 +1,20 @@
+Button: Mode, from cool to fan-only
+Remote before press: power on, mode cool, fan level 4, 26.5 C, swing off
+Remote after press: fan-only mode
+Captured: 2026-11-03 00:20:36 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: mode-fan.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 61 32 00 60 00 00 06 60 00 00 C5 00 08 38
+
+Frames 1 and 2 match swing-off. Checksums match.
+
+Frame 3 differences from cool:
+- Byte 5: 31 -> 61. Bit 0 stays 1 (power on). Bits 4-6 change from 3 (Cool) to 6 (Fan). That is the standard Daikin mode field.
+- Byte 6: 35 -> 32. Setpoint changed from 26.5 C to 25 C. The remote sent this along with the mode change.
+- Byte 8 stays 60: fan level 4, swing off.
+- Byte 18: 0B -> 38. Checksum only.

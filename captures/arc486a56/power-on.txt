@@ -1,0 +1,21 @@
+Button: Power, turning the unit on
+Remote before press: power off
+Expected after press: previous settings restored (cool, fan level 3, 26 C, swing on). The display was not read back after this press.
+Captured: 2026-11-03 00:14:34 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: power-on.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+Header about 3491 us mark, 1754 us space.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 34 00 5F 00 00 06 60 00 00 C5 00 08 09
+
+Checksum of each frame matches. Frames 1 and 2 are identical to power-off.
+
+Frame 3 differences from power-off:
+- Byte 5: 30 -> 31. Bit 0 is the power bit (0 off, 1 on). Upper bits stay 3, which is Cool in the standard Daikin mode field.
+- Byte 6 stays 34. Standard Daikin stores Celsius times 2, so 34 is 26 C.
+- Byte 16: 40 -> 00. Not identified yet.
+- Byte 18: 48 -> 09. Checksum only.

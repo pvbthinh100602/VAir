@@ -1,0 +1,19 @@
+Button: Power, turning the unit off
+Remote before press: power on, mode cool, fan level 3, 26 C, swing on
+Remote after press: power off
+Captured: 2026-11-03 00:13:44 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: power-off.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+Header about 3488 us mark, 1775 us space.
+Inter-frame gap about 25000 us before the first header.
+A 7-pulse preamble precedes that gap.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 30 34 00 5F 00 00 06 60 00 00 C5 40 08 48
+
+Each frame's last byte is the low byte of the sum of the earlier bytes in that frame.
+That checksum matches IRremoteESP8266 Daikin, not DAIKIN216.
+ESPHome climate platform daikin sends this 3-frame layout.

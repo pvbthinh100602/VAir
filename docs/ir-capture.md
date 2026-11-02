@@ -26,17 +26,15 @@ Connect the VS1838B receiver module to your ESP32:
 |-------------|-----------|-------|
 | VCC | 3.3V | Power supply (can use 5V with voltage divider on OUT) |
 | GND | GND | Ground |
-| OUT | GPIO15 | Signal output (see note below) |
-
-**GPIO Note**: GPIO15 is a strapping pin and will generate a warning in ESPHome, but it works correctly with the `inverted: true` and `pullup: true` settings. Alternative pins: GPIO16, GPIO18, or other non-strapping GPIOs.
+| OUT | GPIO35 | Signal output. GPIO35 is input-only, so no pull-up is used. |
 
 See [wiring.md](wiring.md) for the complete circuit diagram including the transmitter circuit.
 
 ## ESPHome Configuration
 
-### Enable the IR Receiver
+Flash `firmware/esphome/ir-capture.yaml`. It listens on GPIO35 and prints each capture on the USB log. It does not use Wi-Fi.
 
-Edit `firmware/esphome/daikin-ftkb35.yaml` and uncomment the `remote_receiver` section:
+The same receiver block can be uncommented in `firmware/esphome/daikin-ftkb35.yaml` when that firmware is already in use:
 
 ```yaml
 # --- IR Receiver (OPTIONAL, for capturing real remote signals) ---
@@ -63,8 +61,7 @@ remote_receiver:
 ### Flash the Updated Configuration
 
 ```bash
-cd firmware/esphome
-esphome run daikin-ftkb35.yaml
+esphome run firmware/esphome/ir-capture.yaml --device /dev/ttyUSB0 --upload_speed 115200
 ```
 
 ## Capturing Signals
@@ -74,7 +71,7 @@ esphome run daikin-ftkb35.yaml
 After flashing, start monitoring the logs:
 
 ```bash
-esphome logs daikin-ftkb35.yaml
+esphome logs firmware/esphome/ir-capture.yaml --device /dev/ttyUSB0
 ```
 
 Or connect via Home Assistant and view the logs from the device page.

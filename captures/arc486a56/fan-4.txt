@@ -1,0 +1,20 @@
+Button: Fan
+Remote before press: power on, mode cool, fan level 3, 26.5 C, swing on
+Remote after press: fan level 4. Temperature stayed 26.5 C.
+Captured: 2026-11-03 00:18:06 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: fan-4.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 6F 00 00 06 60 00 00 C5 00 08 1A
+
+Frames 1 and 2 match the 26.5 C capture. Checksums match.
+
+Frame 3 differences from fan level 3:
+- Byte 8: 5F -> 6F. The high nibble changed from 5 to 6. The low nibble stayed F.
+  In IRremoteESP8266 Daikin, fan code 5 is level 3 and fan code 6 is level 4, stored in that high nibble.
+- Byte 6 stays 35, which is 26.5 C.
+- Byte 18: 0A -> 1A. Checksum only. It rose by 0x10, the same amount as byte 8.

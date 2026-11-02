@@ -1,0 +1,21 @@
+Button: Night / sleep
+Remote before press: power on, mode cool, fan auto, 26.5 C, swing off
+Remote after press: fan night/sleep. Temperature stayed 26.5 C.
+Captured: 2026-11-03 00:49:25 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: night.raw.txt (585 pulses)
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 B0 00 00 06 60 00 00 C5 00 08 5B
+
+Frames 1 and 2 match fan auto. Checksums match.
+
+Frame 3 differences from fan auto, swing off:
+- Byte 8: A0 -> B0. The high nibble changed from A to B. The low nibble stayed 0 (swing off).
+  Fan code B is night/sleep on this remote. That is the same nibble IRremoteESP8266 uses for Daikin quiet.
+- Byte 6 stays 35, which is 26.5 C.
+- Byte 5 stays 31: power on, cool.
+- Byte 18: 4B -> 5B. Checksum only. It rose by 0x10, the same amount as byte 8.

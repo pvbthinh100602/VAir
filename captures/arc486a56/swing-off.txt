@@ -1,0 +1,21 @@
+Button: Swing, turning swing off
+Remote before press: power on, mode cool, fan level 4, 26.5 C, swing on
+Remote after press: swing off
+Captured: 2026-11-03 00:18:50 +0700
+Source: USB log from firmware/esphome/ir-capture.yaml, receiver on GPIO35
+Raw pulses: swing-off.raw.txt (585 pulses)
+
+A burst at 00:18:46 was byte-identical to fan-4 and is not this capture.
+
+Decoded as standard 3-frame Daikin, least-significant bit first.
+
+Frame 1 (8 bytes): 11 DA 27 00 C5 00 00 D7
+Frame 2 (8 bytes): 11 DA 27 00 42 00 00 54
+Frame 3 (19 bytes): 11 DA 27 00 00 31 35 00 60 00 00 06 60 00 00 C5 00 08 0B
+
+Frames 1 and 2 match fan level 4. Checksums match.
+
+Frame 3 differences from swing on (fan level 4):
+- Byte 8: 6F -> 60. High nibble stays 6 (fan level 4). Low nibble F -> 0, which is swing off in the standard Daikin fan/swing byte.
+- Byte 6 stays 35 (26.5 C).
+- Byte 18: 1A -> 0B. Checksum only. It fell by 0x0F, the same amount as byte 8.
