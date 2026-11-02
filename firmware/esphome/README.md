@@ -109,47 +109,40 @@ Select the network device (e.g., `daikin-ftkb35.local`) instead of the serial po
 
 ## Configuration Options
 
-### Enabling the IR Receiver (for Signal Capture)
+### Protocol
 
-To capture signals from your original remote (recommended before testing AC control):
+Captures from the ARC486A56 remote are standard 3-frame Daikin. `daikin-ftkb35.yaml` only sends those frames through the local `daikin_ftkb` platform. Heat and heat/cool are disabled. Reading and decoding a remote press is `ir-capture.yaml`, a separate image.
 
-1. Wire the VS1838B receiver module as described in [docs/wiring.md](../../docs/wiring.md)
-2. Edit `daikin-ftkb35.yaml` and uncomment the `remote_receiver:` section
-3. Reflash the firmware
-4. Follow the capture guide in [docs/ir-capture.md](../../docs/ir-capture.md)
+Fan level 3 is the climate fan mode Medium. Fan level 4 is Middle. Fan level 5 is High. Fan auto and night/sleep are captured. Temperature steps are 0.5°C. Vertical swing matches the captured swing bit. Dry mode, fan level 1, and actually changing the air conditioner have not been confirmed on this unit.
 
-### Disabling Heat Mode
+### UART control
 
-If your remote only supports COOL/DRY/FAN modes (standard for Vietnamese market):
+`daikin-ftkb35.yaml` reads commands from the USB serial port. `esphome logs` only prints output, so use a terminal that sends keystrokes. Stop any open log first.
 
-Uncomment this line in the `climate:` section:
-
-```yaml
-supports_heat: false
+```bash
+python3 -m serial.tools.miniterm --echo --eol LF /dev/ttyUSB0 115200
 ```
 
-### Trying Alternative Protocols
+Type a command and press Enter. Each command sends one infrared frame on GPIO13.
 
-If the default `platform: daikin` doesn't work, try:
-
-**Option 1: Daikin ARC (Japanese remotes)**
-```yaml
-climate:
-  - platform: daikin_arc
-    name: "Daikin FTKB35 Air Conditioner"
+```text
+help
+status
+off
+mode cool 26.5
+mode dry 26
+mode fan
+temp 26.5
+fan medium
+fan middle
+swing on
+swing off
+test
+replay on
+replay off
 ```
 
-**Option 2: HeatpumpIR**
-```yaml
-climate:
-  - platform: heatpumpir
-    protocol: daikin  # or daikin_arc417, daikin_arc480
-    horizontal_default: auto
-    vertical_default: auto
-    name: "Daikin FTKB35 Air Conditioner"
-```
-
-See the [ESPHome Climate documentation](https://esphome.io/components/climate/) for more options.
+`fan medium` is captured fan level 3. `fan middle` is captured fan level 4. `fan high` is captured fan level 5 (byte 8 high nibble 7). `fan auto` is captured as nibble A. `fan quiet` is the captured night/sleep mode, nibble B. `test` turns the IR carrier on for one second. `replay on` and `replay off` send the exact captured remote frames.
 
 ## Usage
 
@@ -220,11 +213,11 @@ To use different GPIO pins, edit the `pin:` values in `daikin-ftkb35.yaml`:
 
 ```yaml
 remote_transmitter:
-  pin: GPIO4  # Change to your preferred GPIO
+  pin: GPIO13  # IR LED signal
 
 remote_receiver:
   pin:
-    number: GPIO15  # Change to your preferred GPIO
+    number: GPIO35  # VS1838B OUT. Input-only, no pull-up.
 ```
 
 **Avoid strapping pins during boot**: GPIO0, GPIO2, GPIO5, GPIO12, GPIO15
@@ -249,9 +242,31 @@ api:
   reboot_timeout: 0s  # Disable automatic reboot on API disconnect
 ```
 
+## Onboard LED blink (bring-up)
+
+`blink.yaml` prints `blink` on the serial log once per second. On the ESP32-D0WD-V3 board used for bring-up there is no GPIO user LED. The LED by the USB chip is the CP2102 data LED, and it flashes when that log line is sent. The red power LED stays on. No Wi-Fi or `secrets.yaml` is required.
+
+```bash
+source .venv/bin/activate
+esphome run firmware/esphome/blink.yaml --device /dev/ttyUSB0 --upload_speed 115200
+```
+
+## IR capture
+
+`ir-capture.yaml` listens on GPIO35 and prints each remote burst on the USB log. Wire the VS1838B VCC to 3.3V, GND to GND, and OUT to GPIO35. GPIO35 is input-only, so the config does not enable a pull-up. No Wi-Fi or `secrets.yaml` is required.
+
+```bash
+esphome run firmware/esphome/ir-capture.yaml --device /dev/ttyUSB0 --upload_speed 115200
+```
+
+Press one button on the Daikin remote. A DAIKIN216 capture is two frames; a standard DAIKIN capture is three. See [docs/ir-capture.md](../../docs/ir-capture.md).
+
 ## Files in This Directory
 
-- **daikin-ftkb35.yaml**: Main ESPHome configuration
+- **daikin-ftkb35.yaml**: Main ESPHome configuration for the captured Daikin protocol
+- **components/daikin_ftkb/**: IR sender built from the ARC486A56 captures
+- **ir-capture.yaml**: IR receiver logger for remote capture
+- **blink.yaml**: Onboard LED blink for board bring-up
 - **secrets.example.yaml**: Template for credentials (copy to secrets.yaml)
 - **secrets.yaml**: Your actual credentials (gitignored, never commit this!)
 - **README.md**: This file
@@ -259,10 +274,10 @@ api:
 ## Next Steps
 
 1. ✅ Flash firmware to ESP32
-2. 📋 Capture IR signals from original remote ([guide](../../docs/ir-capture.md))
-3. 📋 Verify protocol type (DAIKIN vs DAIKIN216)
-4. 📋 Test AC control (power on/off, temperature, mode)
-5. 📋 Document findings and update configuration if needed
+2. ✅ Capture IR signals from the original remote ([guide](../../docs/ir-capture.md))
+3. ✅ Protocol is 3-frame Daikin, with frame bytes recorded in `captures/arc486a56/`
+4. 📋 Test AC control (power on/off, temperature, mode) with the IR LED on GPIO13
+5. 📋 Confirm dry mode and fan level 1
 
 ## Resources
 
@@ -276,4 +291,4 @@ api:
 
 **Need Help?** Open an issue on the [VAir GitHub repository](https://github.com/pvbthinh100602/VAir/issues).
 
-**Last Updated**: October 26, 2026
+**Last Updated**: November 3, 2026
