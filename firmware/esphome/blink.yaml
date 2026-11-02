@@ -1,0 +1,22 @@
+# Bring-up firmware: blink the board data LED.
+#
+# This ESP32-D0WD-V3 board has no GPIO user LED. The LED next to the
+# USB chip is the CP2102 data LED. It flashes when the ESP32 transmits
+# a serial log line. Printing one line per second blinks that LED.
+
+esphome:
+  name: vair-blink
+  friendly_name: VAir Blink
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: INFO
+
+interval:
+  - interval: 1s
+    then:
+      - logger.log: "blink"
