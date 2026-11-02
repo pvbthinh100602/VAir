@@ -1,0 +1,22 @@
+---
+description: Rebuild affected ESPHome firmware after each code change before finishing
+alwaysApply: true
+---
+
+# Rebuild before finish
+
+A change to firmware source is unfinished until `esphome compile` succeeds for every config that includes it.
+
+Firmware source is `firmware/esphome/**/*.yaml`, `firmware/esphome/components/**`, and files those configs include. Docs, capture notes, skills, and rules do not need a firmware rebuild.
+
+Before the final reply:
+
+1. Activate the project environment: `source .venv/bin/activate`
+2. Compile each affected config:
+   - Control component or `daikin-ftkb35.yaml`: `esphome compile firmware/esphome/daikin-ftkb35.yaml`
+   - `ir-capture.yaml`: `esphome compile firmware/esphome/ir-capture.yaml`
+   - `blink.yaml`: `esphome compile firmware/esphome/blink.yaml`
+3. If compile fails, fix the code and compile again. Do not finish on a failed build.
+4. In the final reply, say which config compiled and that it succeeded.
+
+Compile only. Flash or upload only when the user asks. `esphome config` is not a rebuild.
