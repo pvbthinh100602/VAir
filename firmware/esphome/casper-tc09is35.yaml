@@ -1,0 +1,62 @@
+# ESPHome control firmware for a Casper unit with remote YKR-C/001.
+#
+# The nameplate was given as TC-00IS35. Casper's published EcoCity model
+# in that series is TC-09IS35 (cool only). This image follows the remote.
+# AUX lists YKR-C/001 with the YKR-T remotes.
+#
+# The frame is the 13-byte AUX / Electra layout used by IRremoteESP8266
+# ELECTRA_AC. Power, cool, heat, fan, temperature, and the button byte
+# are taken from published YKR-T/011 and YKR-T/101 captures. YKR-C/001
+# has not been captured, and the indoor unit has not been tested.
+# Dry mode and vertical swing follow the Electra bit field. Those two
+# fields were not in the YKR-T tables used here.
+#
+# IR LED signal pin is GPIO13.
+# This image does not read IR. Frame capture is firmware/esphome/ir-capture.yaml.
+# Commands are typed on the USB serial port. See the firmware README.
+
+esphome:
+  name: casper-tc09is35
+  friendly_name: Casper TC-09IS35
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Casper-TC09 Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+remote_transmitter:
+  id: ir_tx
+  pin: GPIO13
+  carrier_duty_percent: 50%
+  non_blocking: false
+
+climate:
+  - platform: casper_ykr
+    name: "Casper TC-09IS35 Air Conditioner"
+    transmitter_id: ir_tx
+    supports_heat: false
+    supports_heat_cool: false

@@ -144,6 +144,33 @@ replay off
 
 `fan medium` is captured fan level 3. `fan middle` is captured fan level 4. `fan high` is captured fan level 5 (byte 8 high nibble 7). `fan auto` is captured as nibble A. `fan quiet` is the captured night/sleep mode, nibble B. `test` turns the IR carrier on for one second. `replay on` and `replay off` send the exact captured remote frames.
 
+## Casper YKR-C/001 (unconfirmed)
+
+`casper-tc09is35.yaml` sends a 13-byte AUX / Electra frame on GPIO13 for the YKR-C/001 remote. The nameplate was given as TC-00IS35; Casper publishes that series as TC-09IS35. The bytes come from published YKR-T captures, not from this remote, and the indoor unit has not been tested.
+
+```bash
+python3 -m serial.tools.miniterm --echo --eol LF /dev/ttyUSB0 115200
+```
+
+```text
+help
+status
+off
+mode cool 26
+mode dry 26
+mode fan
+temp 26
+fan low
+fan medium
+fan high
+fan auto
+swing on
+swing off
+test
+```
+
+`test` turns the IR carrier on for one second. The log line `Frame` is the 13 bytes just sent. Compare that line with a capture from `ir-capture.yaml` before trusting it.
+
 ## Usage
 
 ### Viewing Logs
@@ -265,6 +292,8 @@ Press one button on the Daikin remote. A DAIKIN216 capture is two frames; a stan
 
 - **daikin-ftkb35.yaml**: Main ESPHome configuration for the captured Daikin protocol
 - **components/daikin_ftkb/**: IR sender built from the ARC486A56 captures
+- **casper-tc09is35.yaml**: Unconfirmed sender for a Casper unit with remote YKR-C/001
+- **components/casper_ykr/**: 13-byte AUX / Electra frame builder for that remote
 - **ir-capture.yaml**: IR receiver logger for remote capture
 - **blink.yaml**: Onboard LED blink for board bring-up
 - **secrets.example.yaml**: Template for credentials (copy to secrets.yaml)

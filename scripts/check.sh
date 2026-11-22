@@ -61,6 +61,7 @@ fi
 
 ESPHOME_CONFIGS=(
     "firmware/esphome/daikin-ftkb35.yaml"
+    "firmware/esphome/casper-tc09is35.yaml"
     "firmware/esphome/blink.yaml"
     "firmware/esphome/ir-capture.yaml"
 )
