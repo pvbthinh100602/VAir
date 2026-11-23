@@ -146,7 +146,7 @@ replay off
 
 ## Casper YKR-C/001 (unconfirmed)
 
-`casper-tc09is35.yaml` sends a 13-byte AUX / Electra frame on GPIO13 for the YKR-C/001 remote. The nameplate was given as TC-00IS35; Casper publishes that series as TC-09IS35. The bytes come from published YKR-T captures, not from this remote, and the indoor unit has not been tested.
+`casper-tc09is35.yaml` sends a 13-byte ELECTRA_AC frame on GPIO13 for the YKR-C/001 remote. The nameplate was given as TC-00IS35; Casper publishes that series as TC-09IS35. Timings, bit order, checksum, and the power, mode, temperature, fan, and swing fields follow IRremoteESP8266 `IRElectraAc`. Byte 11 is the YKR key code from published YKR-T/011 captures, not Electra's light-toggle byte. YKR-C/001 has not been captured, and the indoor unit has not been tested. The comparison is in [docs/casper-electra.md](../../docs/casper-electra.md).
 
 ```bash
 python3 -m serial.tools.miniterm --echo --eol LF /dev/ttyUSB0 115200
@@ -293,7 +293,7 @@ Press one button on the Daikin remote. A DAIKIN216 capture is two frames; a stan
 - **daikin-ftkb35.yaml**: Main ESPHome configuration for the captured Daikin protocol
 - **components/daikin_ftkb/**: IR sender built from the ARC486A56 captures
 - **casper-tc09is35.yaml**: Unconfirmed sender for a Casper unit with remote YKR-C/001
-- **components/casper_ykr/**: 13-byte AUX / Electra frame builder for that remote
+- **components/casper_ykr/**: 13-byte ELECTRA_AC frame builder for that remote, with the YKR key byte kept
 - **ir-capture.yaml**: IR receiver logger for remote capture
 - **blink.yaml**: Onboard LED blink for board bring-up
 - **secrets.example.yaml**: Template for credentials (copy to secrets.yaml)

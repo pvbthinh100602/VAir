@@ -54,7 +54,7 @@ static const char *fan_name(climate::ClimateFanMode mode) {
 void CasperYkrClimate::setup() {
   climate_ir::ClimateIR::setup();
   ESP_LOGI(TAG, "UART control ready. Type 'help' and press Enter.");
-  ESP_LOGI(TAG, "YKR-C/001 frame is unconfirmed. This sends the published YKR-T layout.");
+  ESP_LOGI(TAG, "YKR-C/001 frame is unconfirmed. It follows ELECTRA_AC except byte 11, which is the YKR key code.");
 }
 
 void CasperYkrClimate::loop() {
@@ -187,74 +187,44 @@ void CasperYkrClimate::handle_line_(char *line) {
   }
 }
 
-void CasperYkrClimate::transmit_state() {
-  const uint8_t previous_mode = this->last_mode_;
-  uint8_t mode_bits = previous_mode;
-  switch (this->mode) {
-    case climate::CLIMATE_MODE_DRY:
-      mode_bits = MODE_DRY;
-      break;
-    case climate::CLIMATE_MODE_FAN_ONLY:
-      mode_bits = MODE_FAN;
-      break;
-    case climate::CLIMATE_MODE_COOL:
-      mode_bits = MODE_COOL;
-      break;
-    case climate::CLIMATE_MODE_OFF:
-    default:
-      break;
-  }
-  if (this->mode != climate::CLIMATE_MODE_OFF) {
-    this->last_mode_ = mode_bits;
-  }
-
-  const float clamped = clamp(this->target_temperature, 16.0f, 32.0f);
-  const uint8_t temperature = static_cast<uint8_t>(std::lround(clamped));
-  const uint8_t vane = this->swing_mode == climate::CLIMATE_SWING_VERTICAL ? VANE_SWING : VANE_DOWN;
-
-  uint8_t fan_bits = FAN_AUTO;
-  const climate::ClimateFanMode fan = this->fan_mode.value_or(climate::CLIMATE_FAN_AUTO);
+static uint8_t fan_bits_of(climate::ClimateFanMode fan) {
   switch (fan) {
     case climate::CLIMATE_FAN_LOW:
-      fan_bits = FAN_LOW;
-      break;
+      return FAN_LOW;
     case climate::CLIMATE_FAN_MEDIUM:
-      fan_bits = FAN_MEDIUM;
-      break;
+      return FAN_MEDIUM;
     case climate::CLIMATE_FAN_HIGH:
-      fan_bits = FAN_HIGH;
-      break;
+      return FAN_HIGH;
     case climate::CLIMATE_FAN_AUTO:
     default:
-      fan_bits = FAN_AUTO;
-      break;
+      return FAN_AUTO;
   }
+}
 
-  uint8_t button = BUTTON_POWER;
-  if (this->mode != this->last_power_mode_ || mode_bits != previous_mode) {
-    button = BUTTON_POWER;
-  } else if (temperature > static_cast<uint8_t>(std::lround(this->last_temperature_))) {
-    button = BUTTON_TEMP_UP;
-  } else if (temperature < static_cast<uint8_t>(std::lround(this->last_temperature_))) {
-    button = BUTTON_TEMP_DOWN;
-  } else if (fan != this->last_fan_) {
-    button = BUTTON_FAN;
-  } else if (this->swing_mode != this->last_swing_) {
-    button = BUTTON_SWING_V;
+static Op op_of(climate::ClimateMode mode) {
+  switch (mode) {
+    case climate::CLIMATE_MODE_DRY:
+      return Op::Dry;
+    case climate::CLIMATE_MODE_FAN_ONLY:
+      return Op::Fan;
+    case climate::CLIMATE_MODE_COOL:
+      return Op::Cool;
+    case climate::CLIMATE_MODE_OFF:
+      return Op::Off;
+    default:
+      return Op::Other;
   }
+}
 
-  uint8_t frame[13] = {0xC3, 0x00, SWING_H_OFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, button, 0x00};
-  frame[1] = static_cast<uint8_t>((temperature - 8) << 3) | vane;
-  frame[4] = static_cast<uint8_t>(fan_bits << 5);
-  frame[6] = static_cast<uint8_t>(mode_bits << 5);
-  frame[9] = this->mode == climate::CLIMATE_MODE_OFF ? 0x00 : POWER_ON;
+void CasperYkrClimate::transmit_state() {
+  const float clamped = clamp(this->target_temperature, 16.0f, 32.0f);
+  const uint8_t temperature = static_cast<uint8_t>(std::lround(clamped));
+  const uint8_t fan_bits = fan_bits_of(this->fan_mode.value_or(climate::CLIMATE_FAN_AUTO));
+  const bool swing_vertical = this->swing_mode == climate::CLIMATE_SWING_VERTICAL;
+  const Decision decision = encode(this->memory_, op_of(this->mode), temperature, fan_bits, swing_vertical);
+  this->memory_ = decision.next;
 
-  uint8_t checksum = 0;
-  for (int i = 0; i < 12; i++) {
-    checksum += frame[i];
-  }
-  frame[12] = checksum;
-
+  const uint8_t *frame = decision.frame;
   ESP_LOGI(TAG, "Frame %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", frame[0], frame[1], frame[2],
            frame[3], frame[4], frame[5], frame[6], frame[7], frame[8], frame[9], frame[10], frame[11], frame[12]);
 
@@ -263,17 +233,12 @@ void CasperYkrClimate::transmit_state() {
   data->set_carrier_frequency(CARRIER_FREQUENCY);
   data->mark(HEADER_MARK);
   data->space(HEADER_SPACE);
-  for (uint8_t byte : frame) {
+  for (uint8_t byte : decision.frame) {
     send_byte(data, byte);
   }
   data->mark(BIT_MARK);
   data->space(MESSAGE_GAP);
   transmit.perform();
-
-  this->last_temperature_ = temperature;
-  this->last_fan_ = fan;
-  this->last_swing_ = this->swing_mode;
-  this->last_power_mode_ = this->mode;
 }
 
 }  // namespace esphome::casper_ykr
