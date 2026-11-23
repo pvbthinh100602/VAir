@@ -39,7 +39,7 @@ if ! command -v esphome &> /dev/null; then
 fi
 
 # Check 1: ESPHome Configuration Validation
-echo -e "${BLUE}[1/3] Validating ESPHome configuration...${NC}"
+echo -e "${BLUE}[1/4] Validating ESPHome configuration...${NC}"
 
 SECRETS_FILE="firmware/esphome/secrets.yaml"
 if [[ ! -f "$SECRETS_FILE" ]]; then
@@ -89,7 +89,7 @@ fi
 echo
 
 # Check 2: YAML Linting
-echo -e "${BLUE}[2/3] Linting YAML files...${NC}"
+echo -e "${BLUE}[2/4] Linting YAML files...${NC}"
 
 if command -v yamllint &> /dev/null; then
     # Create yamllint config if it doesn't exist
@@ -121,7 +121,7 @@ fi
 echo
 
 # Check 3: Language Check (No Vietnamese characters except in allowed files)
-echo -e "${BLUE}[3/3] Checking for Vietnamese characters in code/docs...${NC}"
+echo -e "${BLUE}[3/4] Checking for Vietnamese characters in code/docs...${NC}"
 
 # Files where Vietnamese text is explicitly allowed (shop names, addresses, example voice commands)
 ALLOWED_FILES=(
@@ -184,6 +184,23 @@ if [[ "$VIETNAMESE_FOUND" == "true" ]]; then
     ALL_PASSED=false
 else
     echo -e "${GREEN}✓ No Vietnamese characters found in code/docs (English-only verified)${NC}"
+fi
+
+echo
+
+# Check 4: Casper frame against the ELECTRA_AC host harness
+echo -e "${BLUE}[4/4] Comparing Casper YKR frames with ELECTRA_AC...${NC}"
+
+if command -v g++ &> /dev/null && command -v python3 &> /dev/null; then
+    if python3 scripts/compare_casper_electra.py; then
+        echo -e "${GREEN}✓ Casper YKR host comparison passed${NC}"
+    else
+        echo -e "${RED}✗ Casper YKR host comparison failed${NC}"
+        ALL_PASSED=false
+    fi
+else
+    echo -e "${RED}✗ g++ or python3 is missing; cannot run the Electra comparison${NC}"
+    ALL_PASSED=false
 fi
 
 echo

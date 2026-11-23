@@ -4,12 +4,10 @@
 # in that series is TC-09IS35 (cool only). This image follows the remote.
 # AUX lists YKR-C/001 with the YKR-T remotes.
 #
-# The frame is the 13-byte AUX / Electra layout used by IRremoteESP8266
-# ELECTRA_AC. Power, cool, heat, fan, temperature, and the button byte
-# are taken from published YKR-T/011 and YKR-T/101 captures. YKR-C/001
-# has not been captured, and the indoor unit has not been tested.
-# Dry mode and vertical swing follow the Electra bit field. Those two
-# fields were not in the YKR-T tables used here.
+# The frame is the 13-byte ELECTRA_AC layout from IRremoteESP8266.
+# Swing-off is Electra's 0b111. Byte 11 stays the YKR key code, not
+# Electra's light-toggle byte. See docs/casper-electra.md.
+# YKR-C/001 has not been captured, and the indoor unit has not been tested.
 #
 # IR LED signal pin is GPIO13.
 # This image does not read IR. Frame capture is firmware/esphome/ir-capture.yaml.
